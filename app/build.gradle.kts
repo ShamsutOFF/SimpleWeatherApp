@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.material.icons.extended)
 
     // Koin
     implementation(libs.koin.android)
@@ -82,6 +83,7 @@ dependencies {
     // Other
     implementation(libs.timber)
     implementation(libs.gson)
+    implementation(libs.coil)
 
     // Tests
     testImplementation(libs.junit)
