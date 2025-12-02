@@ -12,13 +12,13 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         if (BuildConfig.DEBUG) {
-            Timber.plant(PrettyLogcatTree())
-            Timber.d("@@@ App created")
+            Timber.plant(tree = PrettyLogcatTree())
+            Timber.d(message = "@@@ App created")
         }
         startKoin {
             androidLogger()
-            androidContext(this@App)
-            modules(appModule)
+            androidContext(androidContext = this@App)
+            modules(modules = appModule)
         }
     }
 }
