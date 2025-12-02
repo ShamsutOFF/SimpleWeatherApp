@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.example.simpleweatherapp.models.WeatherResponse
 import com.example.simpleweatherapp.ui.theme.ErrorDialog
 import com.example.simpleweatherapp.ui.theme.FullScreenLoader
 import com.example.simpleweatherapp.vm.MainScreenViewModel
@@ -19,7 +20,6 @@ fun MainScreen(modifier: Modifier = Modifier) {
     val state by viewModel.state.collectAsState()
 
     when (val current = state) {
-        is MainScreenState.Idle -> MainScreenContent(modifier = modifier)
 
         is MainScreenState.Loading -> FullScreenLoader()
 
@@ -42,9 +42,9 @@ fun MainScreen(modifier: Modifier = Modifier) {
 @Composable
 fun MainScreenContent(
     modifier: Modifier = Modifier,
-    weather: String = ""
+    weather: WeatherResponse
 ) {
     Column(modifier = modifier) {
-        if (weather.isNotEmpty()) Text(weather) else Text("Погода еще не загружена")
+        Text(weather.toString())
     }
 }

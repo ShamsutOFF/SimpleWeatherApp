@@ -36,6 +36,7 @@ android {
 
     applicationVariants.all {
         buildConfigField("String", "BASE_URL", "\"http://api.weatherapi.com\"")
+        buildConfigField("String", "BASE_URL_API_KEY", "\"fa8b3df74d4042b9aa7135114252304\"")
     }
 
     compileOptions {

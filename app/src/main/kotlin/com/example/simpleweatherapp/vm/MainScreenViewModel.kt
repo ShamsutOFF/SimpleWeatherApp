@@ -3,6 +3,7 @@ package com.example.simpleweatherapp.vm
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.simpleweatherapp.models.WeatherResponse
 import com.example.simpleweatherapp.network.ApiResult
 import com.example.simpleweatherapp.network.WeatherApiService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +14,7 @@ import timber.log.Timber
 class MainScreenViewModel(
     private val weatherApi: WeatherApiService,
 ) : ViewModel() {
-    private val _state = MutableStateFlow<MainScreenState>(MainScreenState.Idle)
+    private val _state = MutableStateFlow<MainScreenState>(value = MainScreenState.Loading)
     val state: StateFlow<MainScreenState> = _state
 
     init {
@@ -22,12 +23,11 @@ class MainScreenViewModel(
 
     @Stable
     sealed interface MainScreenState {
-        object Idle : MainScreenState
 
         object Loading : MainScreenState
 
         data class WeatherLoaded(
-            val weather: String,
+            val weather: WeatherResponse,
         ) : MainScreenState
 
         data class Error(
@@ -56,7 +56,7 @@ class MainScreenViewModel(
             Timber.d("@@@ getWeather() result: $result")
             _state.value =
                 when (result) {
-                    is ApiResult.Success -> MainScreenState.WeatherLoaded(result.data)
+                    is ApiResult.Success -> MainScreenState.WeatherLoaded(weather = result.data)
                     is ApiResult.Error ->
                         MainScreenState.Error(
                             title = result.title,
