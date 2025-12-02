@@ -1,6 +1,7 @@
 package com.example.simpleweatherapp.ui.theme.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +24,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.simpleweatherapp.models.WeatherResponse
 import com.example.simpleweatherapp.ui.theme.ErrorDialog
-import com.example.simpleweatherapp.ui.theme.FullScreenLoader
 import com.example.simpleweatherapp.vm.MainScreenViewModel
 import com.example.simpleweatherapp.vm.MainScreenViewModel.MainScreenIntent
 import com.example.simpleweatherapp.vm.MainScreenViewModel.MainScreenState
@@ -49,37 +50,69 @@ fun MainScreen(modifier: Modifier = Modifier) {
     val viewModel = koinViewModel<MainScreenViewModel>()
     val state by viewModel.state.collectAsState()
 
-    when (val current = state) {
+    val isRefreshing = state is MainScreenState.Loading
 
-        is MainScreenState.Loading -> FullScreenLoader()
+    PullToRefresh(
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.processIntent(MainScreenIntent.GetWeather) },
+        state = state,
+        modifier = modifier
+    )
+}
 
-        is MainScreenState.WeatherLoaded -> MainScreenContent(
-            modifier = modifier,
-            weather = current.weather
-        )
+@Composable
+fun PullToRefresh(
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    state: MainScreenState,
+    modifier: Modifier = Modifier
+) {
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier
+    ) {
+        when (state) {
+            is MainScreenState.Loading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = "Погода загружается...")
+                }
+            }
 
-        is MainScreenState.Error -> ErrorDialog(
-            title = current.title,
-            text = current.message,
-            onConfirm = {
-                viewModel.processIntent(intent = MainScreenIntent.GetWeather)
-            },
-        )
+            is MainScreenState.WeatherLoaded -> MainScreenContent(
+                modifier = Modifier.fillMaxSize(),
+                weather = state.weather
+            )
+
+            is MainScreenState.Error -> {
+                Box(Modifier.fillMaxSize()) {
+                    MainScreenContent(
+                        modifier = Modifier.fillMaxSize(),
+                        weather = null
+                    )
+                }
+
+                ErrorDialog(
+                    title = state.title,
+                    text = state.message,
+                    onConfirm = { onRefresh() }
+                )
+            }
+        }
     }
-
 }
 
 @Composable
 fun MainScreenContent(
     modifier: Modifier = Modifier,
-    weather: WeatherResponse
+    weather: WeatherResponse? = null
 ) {
+    if (weather == null) return
     val current = weather.current
     val forecast = weather.forecast.forecastDays
 
     Column(
         modifier = modifier
-            .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
